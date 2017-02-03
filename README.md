@@ -16,9 +16,10 @@ that need to be performed by a classical daemon process
 (e.g. double-forking, PID-file checking, creation and locking, etc).
 
 # Exported Functions
-<pre>
+***
+```
 extern pid_t daemonize(int flags)
-</pre>
+```
 It is a low-level function to daemonize process.  Roughly corresponds
 to the BSDs' `daemon()` function but uses double-fork technique (which
 is important on System V flavoured Unix systems) and allows specifying
@@ -39,13 +40,14 @@ daemon process. On error it returns -1 - this value might be returned
 to both parent and daemon process. In this case **errno** value will
 be set accordingly.
 
-<pre>
+***
+```
 extern pid_t rundaemon(int flags,
                        int (*daemon_func)(void *udata),
                        void *udata,
                        int *exit_code,
                        const char *pid_file_path);
-</pre>
+```
 
 It is a thin wrapper on top of daemonize which might check and create
 PID-file if desired. It is recommended to use this function instead
