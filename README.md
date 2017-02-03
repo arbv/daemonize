@@ -49,13 +49,13 @@ extern pid_t rundaemon(int flags,
                        const char *pid_file_path);
 ```
 
-It is a thin wrapper on top of daemonize which might check and create
+It is a thin wrapper on top of `daemonize()` which might check and create
 PID-file if desired. It is recommended to use this function instead
 of *daemonize()* whenever applicable.
 
 ## Arguments
 - `int flags` - daemon creation flags, see above;
-int (*daemon_func)(void *udata) - function pointer to the function to be called after successful - daemonization (actual daemon body);
+- `int (*daemon_func)(void *udata)` - function pointer to the function to be called after successful daemonization (actual daemon body);
 - `void *udata` - pointer to be passed as the value in a call to daemon_func;
 - `int exit_code` - pointer to variable to receive value returned by daemon_func;
 - `const char *pid_file_path` - full pathname to the PID-file. This file will be used for checking if daemon is not already running (by checking if file exists and locked) and will be created if not exists. On the daemon exit, this file will be removed under normal conditions. This value might be NULL, in this case no any checks performed and no file will be created.
