@@ -78,7 +78,7 @@ static int example_daemon(void *udata)
         FD_SET(signal_pipe[0], &readset);
 
         /* wait for data in pipe */
-        result = select(2, &readset, NULL, NULL, NULL);
+        result = select(FD_SETSIZE, &readset, NULL, NULL, NULL);
         /* If errno equals EINTR then call was interrupted by signal. */
         if (result == -1 && errno != EINTR)
         {

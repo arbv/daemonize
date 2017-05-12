@@ -5,7 +5,7 @@ OUT = example
 SRC = daemonize.c example.c
 
 # Project C headers
-HEADERS = daemonize.c
+HEADERS = daemonize.h
 
 # Project C++ sources
 CXX_SRC = 
