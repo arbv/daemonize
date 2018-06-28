@@ -179,12 +179,20 @@ pid_t daemonize(int flags)
     if (!(flags & DMN_KEEP_SIGNAL_HANDLERS))
     {
         /* reset all signals to their defaults */
-#ifdef _NSIG
-        for (i = 0; i < _NSIG; i++)
+#if defined __linux__ &&  defined ( _NSIG )
+        /* Linux */
+        const int nsig = _NSIG;
+#elif defined NSIG
+        /* BSD flavours */
+        const int nsig = NSIG;
+#else
+        /* sane default for the less common systems */
+        const int nsig = 32;
+#endif
+        for (i = 0; i < nsig; i++)
         {
             signal(i, SIG_DFL);
         }
-#endif /* _NSIG */
     }
 
     /* reset error code */
