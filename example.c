@@ -9,35 +9,21 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <sys/signalfd.h>
 #include <fcntl.h>
 #include <syslog.h>
 
 #include "daemonize.h"
-
-
-static int signal_pipe[2] = {-1}; /* we will use this pipe for signal code transmission from handler to daemon body */
-
-/* Daemon signal handler. */
-static void signal_handler(int sig)
-{
-    switch (sig)
-    {
-        case SIGTERM: /* stop daemon */
-        case SIGHUP:  /* reload daemon configuration */
-            /* write signal code into pipe */
-            write(signal_pipe[1], (void *)&sig, sizeof(sig));
-            break;
-        default:
-            return;
-            break;
-    }
-}
 
 /* daemon process body */
 static int example_daemon(void *udata)
 {
     int exit = 0;
     int exit_code = EXIT_SUCCESS;
+    
+    int sfd = -1;
+    sigset_t mask;
+    struct signalfd_siginfo si;
 
     /* open syslog */
     openlog("EXAMPLE", LOG_NDELAY, LOG_DAEMON);
@@ -45,42 +31,45 @@ static int example_daemon(void *udata)
     /* greeting */
     syslog(LOG_INFO, "EXAMPLE daemon started. PID: %ld", (long)getpid());
 
-    /* create pipe for signal handling */
-    if (pipe(signal_pipe) == -1)
+    /* create file descriptor for signal handling */
+    sigemptyset(&mask);
+    /* handle following signals */
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+
+    /* Block signals so that they aren't handled
+       according to their default dispositions */
+    if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1)
     {
-        syslog(LOG_ERR, "Cannot create pipe for signal handling.");
+        closelog();
         return EXIT_FAILURE;
     }
 
-    /* set signal handlers */
-    signal(SIGTERM, signal_handler);
-    signal(SIGHUP, signal_handler);
-
-    /* set pipe as non blockable */
-    if (fcntl(signal_pipe[0], F_SETFL, O_NONBLOCK) == -1 ||
-        fcntl(signal_pipe[1], F_SETFL, O_NONBLOCK) == -1)
+    sfd = signalfd(-1, &mask, 0);
+    if (sfd == -1)
     {
-        syslog(LOG_ERR, "Cannot set signal pipe options.");
-        close(signal_pipe[0]);
-        close(signal_pipe[1]);
+        perror("signalfd failed");
+        sigprocmask(SIG_UNBLOCK, &mask, NULL);
+        closelog();
         return EXIT_FAILURE;
     }
-
+    
     /* daemon loop */
     while (!exit)
     {
-        int sig;
         int result;
         fd_set readset;
         
-        /* add pipe to set */
+        /* add signal file descriptor to set */
         FD_ZERO(&readset);
-        FD_SET(signal_pipe[0], &readset);
+        FD_SET(sfd, &readset);
+        /* One could add more file descriptors here
+           and handle them accordingly if one wants to build server using
+           event driven approach. */
 
-        /* wait for data in pipe */
+        /* wait for data in signal file descriptor */
         result = select(FD_SETSIZE, &readset, NULL, NULL, NULL);
-        /* If errno equals EINTR then call was interrupted by signal. */
-        if (result == -1 && errno != EINTR)
+        if (result == -1)
         {
             syslog(LOG_ERR, "Fatal error during select() call.");
             /* low level error */
@@ -88,11 +77,11 @@ static int example_daemon(void *udata)
             break;
         }
 
-        /* read data from pipe */
-        if (read(signal_pipe[0], &sig, sizeof(sig)) > 0)
+        /* read data from signal handler file descriptor */
+        if (FD_ISSET(sfd, &readset) && read(sfd, &si, sizeof(si)) > 0)
         {
-            /* handle signal */
-            switch (sig)
+            /* handle signals */
+            switch (si.ssi_signo)
             {
                 case SIGTERM: /* stop daemon */
                     syslog(LOG_INFO, "Got SIGTERM signal. Stopping daemon...");
@@ -102,20 +91,16 @@ static int example_daemon(void *udata)
                     syslog(LOG_INFO, "Got SIGHUP signal.");
                     break;
                 default:
-                    syslog(LOG_WARNING, "Got unexpected signal (number: %d).", sig);
+                    syslog(LOG_WARNING, "Got unexpected signal (number: %d).", si.ssi_signo);
                     break;
             }
         }
     }
 
+    /* close signal file descriptor */
+    close(sfd);
     /* remove signal handlers */
-    signal(SIGTERM, SIG_DFL);
-    signal(SIGHUP, SIG_DFL);
-
-    /* close signal pipe */
-    close(signal_pipe[0]);
-    close(signal_pipe[1]);
-
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
     /* write exit code to the system log */
     syslog(LOG_INFO, "Daemon stopped with status code %d.", exit_code);
     /* close system log */
