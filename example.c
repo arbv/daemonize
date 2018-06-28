@@ -45,7 +45,7 @@ static int example_daemon(void *udata)
         return EXIT_FAILURE;
     }
 
-    sfd = signalfd(-1, &mask, 0);
+    sfd = signalfd(-1, &mask, SFD_CLOEXEC);
     if (sfd == -1)
     {
         perror("signalfd failed");
