@@ -49,7 +49,7 @@ clean :
 # Debug target
 debug :
 	@echo "DEBUG build"
-	@$(MAKE) -s -f $(MAKEFILE) DEBUG="1"
+	@DEBUG=1 $(MAKE) -s
 
 install : all
 	@echo "INSTALL to: $(PREFIX)"
