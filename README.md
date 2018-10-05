@@ -4,7 +4,7 @@ Writing UNIX-daemons implies writing a lot of highly repeatable
 code. On the other hand, this code might be written and debugged once
 and used in many programs which need to function like daemons. This
 problem was addressed on BSD UNIX derivatives via a `daemon()`
-function although partially - this function implements only subset of
+function although partially - this function implements only a subset of
 the steps needed to be performed during daemon initialization on most
 UNIX-like operating systems.
 
@@ -21,7 +21,7 @@ that need to be performed by a classical daemon process
 extern pid_t daemonize(int flags)
 ```
 It is a low-level function to daemonize process.  Roughly corresponds
-to the BSDs' `daemon()` function but uses double-fork technique (which
+to the BSDs' `daemon()` function but uses the double-fork technique (which
 is important on System V flavoured Unix systems) and allows specifying
 more daemonization parameters.
 
@@ -34,10 +34,10 @@ more daemonization parameters.
    - **DMN_NO_UMASK** - Do not set **umask** to 0.
 
 ## Return value
-`daemonize()` follows `fork()` semantics.  By default function returns PID
+`daemonize()` follows `fork()` semantics.  By design, the function returns PID
 of the process to the parent process (which starts daemon) or 0 to the
 daemon process. On error it returns -1 - this value might be returned
-to both parent and daemon process. In this case **errno** value will
+to both parent and daemon process. In this case, **errno** value will
 be set accordingly.
 
 ***
@@ -58,7 +58,7 @@ of *daemonize()* whenever applicable.
 - `int (*daemon_func)(void *udata)` - function pointer to the function to be called after successful daemonization (actual daemon body);
 - `void *udata` - pointer to be passed as the value in a call to daemon_func;
 - `int exit_code` - pointer to variable to receive value returned by daemon_func;
-- `const char *pid_file_path` - full pathname to the PID-file. This file will be used for checking if daemon is not already running (by checking if file exists and locked) and will be created if not exists. On the daemon exit, this file will be removed under normal conditions. This value might be NULL, in this case no any checks performed and no file will be created.
+- `const char *pid_file_path` - full pathname to the PID-file. This file will be used for checking if the daemon is not already running (by checking if the file exists and locked) and will be created if not exists. On the daemon exit, this file will be removed under normal conditions. This value might be NULL, in this case no any checks performed and no file will be created.
 
 ## Return value
 This functions shares return values with *daemonize()* function

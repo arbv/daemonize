@@ -15,7 +15,7 @@
 
 #include "daemonize.h"
 
-/* daemon process body */
+/* The daemon process body */
 static int example_daemon(void *udata)
 {
     int exit = 0;
@@ -25,19 +25,19 @@ static int example_daemon(void *udata)
     sigset_t mask;
     struct signalfd_siginfo si;
 
-    /* open syslog */
+    /* open the system log */
     openlog("EXAMPLE", LOG_NDELAY, LOG_DAEMON);
 
     /* greeting */
     syslog(LOG_INFO, "EXAMPLE daemon started. PID: %ld", (long)getpid());
 
-    /* create file descriptor for signal handling */
+    /* create a file descriptor for signal handling */
     sigemptyset(&mask);
-    /* handle following signals */
+    /* handle the following signals */
     sigaddset(&mask, SIGTERM);
     sigaddset(&mask, SIGHUP);
 
-    /* Block signals so that they aren't handled
+    /* Block the signals so that they aren't handled
        according to their default dispositions */
     if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1)
     {
@@ -54,40 +54,40 @@ static int example_daemon(void *udata)
         return EXIT_FAILURE;
     }
     
-    /* daemon loop */
+    /* the daemon loop */
     while (!exit)
     {
         int result;
         fd_set readset;
         
-        /* add signal file descriptor to set */
+        /* add the signal file descriptor to set */
         FD_ZERO(&readset);
         FD_SET(sfd, &readset);
         /* One could add more file descriptors here
-           and handle them accordingly if one wants to build server using
-           event driven approach. */
+           and handle them accordingly if one wants to build a server using
+           event-driven approach. */
 
-        /* wait for data in signal file descriptor */
+        /* wait for the data in the signal file descriptor */
         result = select(FD_SETSIZE, &readset, NULL, NULL, NULL);
         if (result == -1)
         {
             syslog(LOG_ERR, "Fatal error during select() call.");
-            /* low level error */
+            /* a low level error */
             exit_code = EXIT_FAILURE;
             break;
         }
 
-        /* read data from signal handler file descriptor */
+        /* read the data from the signal handler file descriptor */
         if (FD_ISSET(sfd, &readset) && read(sfd, &si, sizeof(si)) > 0)
         {
-            /* handle signals */
+            /* handle the signals */
             switch (si.ssi_signo)
             {
-                case SIGTERM: /* stop daemon */
+                case SIGTERM: /* stop the daemon */
                     syslog(LOG_INFO, "Got SIGTERM signal. Stopping daemon...");
                     exit = 1;
                     break;
-                case SIGHUP: /* reload configuration */
+                case SIGHUP: /* reload the configuration */
                     syslog(LOG_INFO, "Got SIGHUP signal.");
                     break;
                 default:
@@ -97,13 +97,13 @@ static int example_daemon(void *udata)
         }
     }
 
-    /* close signal file descriptor */
+    /* close the signal file descriptor */
     close(sfd);
-    /* remove signal handlers */
+    /* remove the signal handlers */
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
-    /* write exit code to the system log */
+    /* write an exit code to the system log */
     syslog(LOG_INFO, "Daemon stopped with status code %d.", exit_code);
-    /* close system log */
+    /* close the system log */
     closelog();
     
     return exit_code;
@@ -126,14 +126,14 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
         break;
-        case -2: /* Daemon already running */
+        case -2: /* Daemon is already running */
         {
             fprintf(stderr,"Daemon already running.\n");
         }
         break;
         case 0: /* Daemon process. */
         {
-            return exit_code; /* Return daemon exit code. */
+            return exit_code; /* Return the daemon exit code. */
         }
         default: /* Parent process */
         {
