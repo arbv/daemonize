@@ -1,6 +1,6 @@
 MIT/Expat License
 
-Copyright (c) 2016-2017 Artem Boldarev, East Ukrainian National University
+Copyright (c) 2016-2018 Artem Boldariev <artem.boldarev@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),

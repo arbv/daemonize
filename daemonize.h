@@ -1,3 +1,13 @@
+/*
+MIT/Expat License
+
+Copyright (c) 2016-2018 Artem Boldariev <artem.boldarev@gmail.com>
+
+See the LICENSE.txt for details about the terms of use.
+
+Upstream URL: https://bitbucket.org/arbv/daemonize
+ */
+
 #ifndef _DAEMONIZE_H
 #define _DAEMONIZE_H
 
