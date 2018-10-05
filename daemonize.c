@@ -1,3 +1,4 @@
+#ifndef _WIN32
 #include <unistd.h>
 
 #include <stddef.h>
@@ -418,4 +419,6 @@ pid_t rundaemon(int flags, int (*daemon_func)(void *), void *udata, int *exit_co
     
     return pid;
 }
+
+#endif /* _WIN32 */
 

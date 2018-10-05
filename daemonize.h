@@ -1,6 +1,7 @@
 #ifndef _DAEMONIZE_H
 #define _DAEMONIZE_H
 
+#ifndef _WIN32
 /* Daemon creation flags. */
 enum {
     DMN_DEFAULT  = 0,
@@ -70,6 +71,8 @@ will be performed in this case.
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* _WIN32 */
 
 #endif /* _DAEMONIZE_H */
 
