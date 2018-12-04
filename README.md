@@ -15,6 +15,8 @@ other UNIX derivatives. These functions fully implement all the steps
 that need to be performed by a classical daemon process
 (e.g. double-forking, PID-file checking, creation and locking, etc).
 
+Please see the [following post](https://chaoticlab.io/c/c++/unix/2018/10/01/daemonize.html) for the additional information.
+
 # Exported Functions
 ***
 ```
