@@ -1,11 +1,11 @@
 /*
 MIT/Expat License
 
-Copyright (c) 2016-2018 Artem Boldariev <artem.boldarev@gmail.com>
+Copyright (c) 2016-2020 Artem Boldariev <artem@boldariev.com>
 
 See the LICENSE.txt for details about the terms of use.
 
-Upstream URL: https://bitbucket.org/arbv/daemonize
+This example is Linux specific because it uses signalfd(2).
 */
 
 #include <unistd.h>
@@ -15,6 +15,7 @@ Upstream URL: https://bitbucket.org/arbv/daemonize
 #include <signal.h>
 #include <errno.h>
 
+#ifdef __linux__
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/time.h>
@@ -25,12 +26,16 @@ Upstream URL: https://bitbucket.org/arbv/daemonize
 
 #include "daemonize.h"
 
+/* helps to keep track of the largest file descriptor for select() */
+#define FD_SET_MAX(fd, setp, maxp) \
+    (FD_SET(fd, setp), ((maxp) != NULL && fd > (*maxp)) ? *(maxp) = fd : fd)
+
 /* The daemon process body */
 static int example_daemon(void *udata)
 {
     int exit = 0;
     int exit_code = EXIT_SUCCESS;
-    
+
     int sfd = -1;
     sigset_t mask;
     struct signalfd_siginfo si;
@@ -63,22 +68,23 @@ static int example_daemon(void *udata)
         closelog();
         return EXIT_FAILURE;
     }
-    
+
     /* the daemon loop */
     while (!exit)
     {
+        int maxfd = -1;
         int result;
         fd_set readset;
-        
+
         /* add the signal file descriptor to set */
         FD_ZERO(&readset);
-        FD_SET(sfd, &readset);
+        FD_SET_MAX(sfd, &readset, &maxfd);
         /* One could add more file descriptors here
            and handle them accordingly if one wants to build a server using
            event-driven approach. */
 
         /* wait for the data in the signal file descriptor */
-        result = select(FD_SETSIZE, &readset, NULL, NULL, NULL);
+        result = select(maxfd + 1, &readset, NULL, NULL, NULL);
         if (result == -1)
         {
             syslog(LOG_ERR, "Fatal error during select() call.");
@@ -115,7 +121,7 @@ static int example_daemon(void *udata)
     syslog(LOG_INFO, "Daemon stopped with status code %d.", exit_code);
     /* close the system log */
     closelog();
-    
+
     return exit_code;
 }
 
@@ -123,7 +129,7 @@ static int example_daemon(void *udata)
 int main(int argc, char **argv)
 {
     int exit_code = 0;
-    
+
     pid_t pid = rundaemon(0, /* Daemon creation flags. */
                           example_daemon, NULL, /* Daemon body function and its argument. */
                           &exit_code, /* Pointer to a variable to receive daemon exit code */
@@ -154,4 +160,10 @@ int main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 }
-
+#else
+int main(int argc, char **argv)
+{
+    fprintf(stderr, "This program contains Linux specific code. Exiting...\n");
+    return EXIT_FAILURE;
+}
+#endif /* _linux_  */

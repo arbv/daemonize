@@ -69,6 +69,8 @@ it will return -2 to the process which starts the daemon. No
 daemonization will be performed in this case.
 
 # Examples
-An example comes with this project which one could use as the template
-for one's own daemon. The example can be found in `example.c`.
 
+There are two examples which come with this project. They could be used as the template for one's own daemon:
+
+* [`example_portable.c`](./example_portable.c) - an example of the portable daemon. It uses the [self-pipe trick](https://cr.yp.to/docs/selfpipe.html) for signal handling.
+* [`example_linux.c`](./example_linux.c) - this non-portable example is somewhat shorter and easier to follow because it relies on the Linux specific [`signalfd(2)`](https://www.man7.org/linux/man-pages/man2/signalfd.2.html) for signal handling.

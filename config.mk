@@ -1,67 +1,92 @@
 # Project dependency libraries
-LIBS = 
+LDLIBS = 
 
 # Install prefix
-PREFIX ?= /usr/local
+PREFIX = /usr/local
 
-# Object file suffix
+# Executable path
+BINPREFIX ?= $(PREFIX)/bin
+# Manual prefix
+MANPREFIX ?= $(PREFIX)/share/man
+
+# executable file extension (e.g. for Windows)
+# (PATHEXT is defined on Windows)
+ifdef PATHEXT
+EXE = exe
+endif
+# Object file extension
 O = o
-# dll suffix
-SO = so
-# static lib suffix
-A = a
 
 # C compiler
-CC ?= cc
+CC = gcc
 # C++ compiler
-CXX ?= g++
-# linker
-LD = $(CC)
-# assembler
-AS ?= as
-# lib archiever
-AR ?= ar
-ARFLAGS ?= rcs
+CXX = g++
+# C and C++ compiler common flags
+CFLAGS_COMMON= -Wall -pthread -ffunction-sections -MD -pipe
+# C++ common compiler flags
+CXXFLAGS_COMMON = $(CFLAGS) -std=c++11
+# Set the following variable if C and C++ compilers generate
+# dependency files as a side effect of compilation.
+GENDEP=1
 
+# linker
+ifeq ($(strip $(CXX_SRC)),)
+LD = $(CXX)
+else
+LD = $(CC)
+endif
+LDFLAGS_COMMON = -Wl,--gc-sections
+# assembler
+AS = as
+# lib archiever
+AR = ar
+ARFLAGS = rcs
 #strip
-STRIP ?= strip
+STRIP = strip
+# object type
+OBJTYPE = $(lastword $(subst -, ,$(CC)))-$(shell ${CC} -dumpmachine)
+# parser generator and its flags
+YACC = bison
+YFLAGS = -d
+# lexer generator and its flags
+LEX = flex
+LFLAGS =
 
 # common defines
-DEFINES ?=
+DEFINES =
 
 # Default release options
 ifndef DEBUG
 
 # Release only defines
-DEFINES +=
+DEFINES += -D NDEBUG
 
 # C compiler flags
-CFLAGS ?= -O2 -Wall -g
+CFLAGS = $(CFLAGS_COMMON) -O2 -g -flto
 
 # C++ compiler flags
-CXXFLAGS ?= $(CFLAGS)
+CXXFLAGS = $(CFLAGS) $(CXXFLAGS_COMMON)
 
 # Linker flags
-LDFLAGS ?= 
+LDFLAGS = $(LDFLAGS_COMMON) -flto
 
 # Assembler flags
-ASFLAGS ?= 
+ASFLAGS = 
 
-else # Debug target
+# Debug target
+else
 
 # Additional debuf define flags
 DEFINES += -D DEBUG
 
 # Override default flags
-CFLAGS ?= -O0 -g -Wall
-CXXFLAGS ?= $(CFLAGS)
-LDFLAGS ?=
-ASFLAGS ?=
-#YFLAGS ?=
-#LFLAGS ?=
+CFLAGS = $(CFLAGS_COMMON) -O0 -g
+CXXFLAGS = $(CFLAGS) $(CXXFLAGS_COMMON)
+LDFLAGS = $(LDFLAGS_COMMON)
+ASFLAGS =
 
 # Append additional debug libraries
-LIBS += 
+LDLIBS += 
 DEFINES +=
 
 endif
