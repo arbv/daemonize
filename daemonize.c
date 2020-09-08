@@ -1,11 +1,9 @@
 /*
 MIT/Expat License
 
-Copyright (c) 2016-2018 Artem Boldariev <artem.boldarev@gmail.com>
+Copyright (c) 2016-2020 Artem Boldariev <artem@boldariev.com>
 
 See the LICENSE.txt for details about the terms of use.
-
-Upstream URL: https://bitbucket.org/arbv/daemonize
 */
 
 #ifndef _WIN32
@@ -130,7 +128,7 @@ static pid_t doublefork(int *pipefd)
         }
         break;
     }
-    
+
     /* not reachable */
     return -1;
 }
@@ -240,7 +238,7 @@ pid_t daemonize(int flags)
     {
         return pid;
     }
-    
+
     /* redirect stdin, stdout, stderr to /dev/null */
     if (!(flags & DMN_NO_CLOSE))
     {
@@ -293,7 +291,7 @@ static int check_pid_file(const char *pid_file_path)
     fl.l_start = 0;
     fl.l_len = 0;
     fl.l_pid = getpid();
-    
+
     if (fcntl(fd, F_SETLK, &fl) == -1)
     {
         close(fd);
@@ -366,7 +364,7 @@ pid_t rundaemon(int flags, int (*daemon_func)(void *), void *udata, int *exit_co
         char pid_str[64] = {0};
         int pid_str_len;
         mode_t mask;
-        
+
         /* get PID as string */
         pid_str_len = snprintf(pid_str, sizeof(pid_str), "%ld", (long)getpid());
 
@@ -426,9 +424,8 @@ pid_t rundaemon(int flags, int (*daemon_func)(void *), void *udata, int *exit_co
         /* remove file */
         unlink(pid_file_path);
     }
-    
+
     return pid;
 }
 
 #endif /* _WIN32 */
-

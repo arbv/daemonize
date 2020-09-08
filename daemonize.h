@@ -1,11 +1,9 @@
 /*
 MIT/Expat License
 
-Copyright (c) 2016-2018 Artem Boldariev <artem.boldarev@gmail.com>
+Copyright (c) 2016-2020 Artem Boldariev <artem@boldariev.com>
 
 See the LICENSE.txt for details about the terms of use.
-
-Upstream URL: https://bitbucket.org/arbv/daemonize
  */
 
 #ifndef _DAEMONIZE_H
@@ -27,7 +25,7 @@ extern "C" {
 
 extern pid_t daemonize(int flags);
 /*
-* Description 
+* Description
 daemonize() - low level function to daemonize process.
 Roughly corresponds to the BSDs' daemon() function but uses
 double fork technique (which is important on System V
@@ -85,4 +83,3 @@ will be performed in this case.
 #endif /* _WIN32 */
 
 #endif /* _DAEMONIZE_H */
-
